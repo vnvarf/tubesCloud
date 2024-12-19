@@ -4,7 +4,7 @@ pipeline {
         stage('Git checkout') {
             steps {
                 echo 'Cloning repository from GitHub...'
-                checkout([$class: 'GitSCM', branches: [[name: '*/main']],
+                checkout([$class: 'GitSCM', branches: [[name: '*/master']],
                           userRemoteConfigs: [[url: 'https://github.com/vnvarf/tubesCloud.git']]])
             }
         }
