@@ -12,7 +12,7 @@ pipeline {
             steps {
                 echo 'Sending Dockerfile to Ansible server...'
                 sh '''
-                scp Dockerfile user@54.79.72.164:/path/to/destination
+                scp Dockerfile user@13.239.37.184:/path/to/destination
                 '''
             }
         }
