@@ -11,7 +11,7 @@ pipeline {
         stage('Sending Dockerfile to Ansible server') {
             steps {
                 echo 'Sending Dockerfile to Ansible server...'
-                sh '''
+                bat '''
                 scp Dockerfile user@13.239.37.184:/path/to/destination
                 '''
             }
@@ -19,21 +19,21 @@ pipeline {
         stage('Docker build image') {
             steps {
                 echo 'Building Docker image...'
-                sh 'docker build -t vanvaa .'
+                bat 'docker build -t vanvaa .'
             }
         }
         stage('Push Docker images to DockerHub') {
             steps {
                 echo 'Pushing Docker image to DockerHub...'
                 withDockerRegistry([credentialsId: 'dockerhub-credentials', url: '']) {
-                    sh 'docker push vnvarf17/tubes_cloud'
+                    bat 'docker push vnvarf17/tubes_cloud'
                 }
             }
         }
         stage('Copy files to Kubernetes server') {
             steps {
                 echo 'Copying files to Kubernetes server...'
-                sh '''
+                bat '''
                 scp -r ./files user@kubernetes-server:/path/to/destination
                 '''
             }
@@ -41,7 +41,7 @@ pipeline {
         stage('Kubernetes deployment using Ansible') {
             steps {
                 echo 'Deploying to Kubernetes using Ansible...'
-                sh '''
+                bat '''
                 ansible-playbook -i inventory.yml deploy.yml
                 '''
             }
