@@ -1,61 +1,42 @@
 pipeline {
     agent any
+    environment {
+        DOCKER_IMAGE = "tubes_cloud"
+        DOCKER_REGISTRY = 'https://index.docker.io/v1/'
+        DOCKER_REPO = 'vnvarf17/tubes_cloud'
+        DOCKER_CREDENTIALS = 'vnvarf17' // ID kredensial di Jenkins
+        PATH = "/usr/local/bin:$PATH"  // Tambahkan lokasi Docker CLI ke PATH
+        DOCKER_PASSWORD = 'dckr_pat_09ZQN5WPswHBfWNnEeNN2vYZ5To'
+        DOCKER_USERNAME = 'vnvarf17'
+    }
+
     stages {
-        stage('Git checkout') {
+        stage('Git Checkout') {
             steps {
-                echo 'Cloning repository from GitHub...'
-                checkout([$class: 'GitSCM', branches: [[name: '*/master']],
-                          userRemoteConfigs: [[url: 'https://github.com/vnvarf/tubesCloud.git']]])
+                git branch: 'main', changelog: false, poll: false, url: 'https://github.com/vnvarf/tubesCloud'
             }
         }
-        stage('Sending Dockerfile to Ansible server') {
+
+        stage('Build Docker Image') {
             steps {
-                echo 'Sending Dockerfile to Ansible server...'
-                sh '''
-                scp Dockerfile user@13.239.37.184:/path/to/destination
-                '''
-            }
-        }
-        stage('Docker build image') {
-            steps {
-                echo 'Building Docker image...'
-                sh 'docker build -t vanvaa .'
-            }
-        }
-        stage('Push Docker images to DockerHub') {
-            steps {
-                echo 'Pushing Docker image to DockerHub...'
-                withDockerRegistry([credentialsId: 'dockerhub-credentials', url: '']) {
-                    sh 'docker push vnvarf17/tubes_cloud'
+                script {
+                    // Perintah build Docker
+                    sh 'docker build -t ${DOCKER_IMAGE} .'
                 }
             }
         }
-        stage('Copy files to Kubernetes server') {
+
+        stage('Push Docker Image') {
             steps {
-                echo 'Copying files to Kubernetes server...'
-                sh '''
-                scp -r ./files user@kubernetes-server:/path/to/destination
-                '''
+                script {
+                    // Login dan push ke Docker registry
+                    sh """
+                        echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_USERNAME" --password-stdin ${DOCKER_REGISTRY}
+                        docker tag ${DOCKER_IMAGE}:latest ${DOCKER_REPO}:latest
+                        docker push ${DOCKER_REPO}:latest
+                    """
+                }
             }
-        }
-        stage('Kubernetes deployment using Ansible') {
-            steps {
-                echo 'Deploying to Kubernetes using Ansible...'
-                sh '''
-                ansible-playbook -i inventory.yml deploy.yml
-                '''
-            }
-        }
-    }
-    post {
-        always {
-            echo 'Pipeline execution finished.'
-        }
-        success {
-            echo 'Pipeline completed successfully.'
-        }
-        failure {
-            echo 'Pipeline failed.'
         }
     }
 }
