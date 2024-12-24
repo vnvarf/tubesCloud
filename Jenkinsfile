@@ -38,5 +38,50 @@ pipeline {
                 }
             }
         }
+        
+        stage('Deploy to Ansible Server') {
+            steps {
+                script {
+                    sshPublisher(
+                        publishers: [
+                            sshPublisherDesc(
+                                configName: 'Ansible-Server', // Ganti dengan nama konfigurasi server SSH Anda di Jenkins
+                                transfers: [
+                                    sshTransfer(
+                                        sourceFiles: '*/', // Semua file di workspace akan dikirim
+                                        remoteDirectory: '/var/www/tubes_cloud_app/' // Folder tujuan di server
+                                    )
+                                ],
+                                usePromotionTimestamp: false,
+                                verbose: true
+                            )
+                        ]
+                    )
+                }
+            }
+        }
+        
+                stage('Deploy to Kubernetes Server') {
+            steps {
+                script {
+                    sshPublisher(
+                        publishers: [
+                            sshPublisherDesc(
+                                configName: 'Kubernetes-Server', // Ganti dengan nama konfigurasi server SSH Anda di Jenkins
+                                transfers: [
+                                    sshTransfer(
+                                        sourceFiles: '*/', // Semua file di workspace akan dikirim
+                                        remoteDirectory: '/var/www/tubes_cloud_app/' // Folder tujuan di server
+                                    )
+                                ],
+                                usePromotionTimestamp: false,
+                                verbose: true
+                            )
+                        ]
+                    )
+                }
+            }
+        }
+        
     }
 }
